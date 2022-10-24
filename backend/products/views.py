@@ -1,4 +1,4 @@
-from rest_framework import generics
+from rest_framework import authentication, generics, mixins, permissions
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 # from django.http import Http404
@@ -8,6 +8,7 @@ from yaml import serialize
 
 
 from .models import Product
+from .permissions import IsStaffEditorPermissions
 from .serializers import ProductSerializer
 
 # class ProductCreateAPIView(generics.CreateAPIView):
@@ -31,6 +32,8 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     # perhaps adding user, different serializer class (advanced for now)
+    authentication_classes = [authentication.SessionAuthentication]
+    permission_classes = [permissions.IsAdminUser, IsStaffEditorPermissions]
 
     def perform_create(self, serializer):
         # serializer.save(user=self.request.user)
@@ -52,6 +55,7 @@ product_detail_view = ProductDetailAPIView.as_view()
 class ProductUpdateAPIView(generics.UpdateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    # permission_classes = [permissions.DjangoModelPermissions]
     loopup_field = 'pk'
 
     def perform_update(self, serializer):
@@ -78,6 +82,38 @@ product_destroy_view = ProductDestroyAPIView.as_view()
 #     serializer_class = ProductSerializer
 
 # product_create_view = ProductListAPIView.as_view()
+
+class CreateAPIView(mixins.CreateModelMixin, generics.GenericAPIView): # create API view
+    pass
+
+class ProductMixinView(
+    # unpacking following four into one single view
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin, 
+    mixins.RetrieveModelMixin, # for lookup_field, cares about look_up field
+    generics.GenericAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_field = 'pk' # only matters for things it matters to
+    def get(self, request, *args, **kwargs):
+        print(args, kwargs) # shows up in terminal
+        pk = kwargs.get("pk")
+        if pk is not None: 
+            return self.retrieve(request, *args, **kwargs)
+        return self.list(request, *args, **kwargs)
+    def post(self, request, *args, **kwargs): #HTTP --> Post # when use mixins, access to methods in mixin
+        return self.create(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        # serializer.save(user=self.request.user)
+        # print(serializer.validated_data)
+        title = serializer.validated_data.get('title')
+        content = serializer.validated_data.get('content') or None
+        if content is None:
+            content = "this is hehe"
+        serializer.save(content=content)
+
+product_mixin_view = ProductMixinView.as_view()
 
 @api_view(["GET", "POST"])
 def product_alt_view(request, pk=None, *args, **kwargs):

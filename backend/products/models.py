@@ -3,6 +3,7 @@ from django.db import models
 
 # Create your models here.
 class Product(models.Model):
+    # owner = models.ForeignKey(User) for custom permissions
     title = models.CharField(max_length=120)
     content = models.TextField(blank=True, null=True)
     price = models.DecimalField(max_digits=15,
