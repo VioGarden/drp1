@@ -6,9 +6,12 @@ from django.shortcuts import get_object_or_404
 
 from yaml import serialize
 
+# from api.authentication import TokenAuthentication
+
+from api.mixins import StaffEditorPermissionMixin
 
 from .models import Product
-from .permissions import IsStaffEditorPermissions
+# from ..api.permissions import IsStaffEditorPermissions
 from .serializers import ProductSerializer
 
 # class ProductCreateAPIView(generics.CreateAPIView):
@@ -28,12 +31,18 @@ from .serializers import ProductSerializer
 
 # product_create_view = ProductCreateAPIView.as_view()
 
-class ProductListCreateAPIView(generics.ListCreateAPIView):
+class ProductListCreateAPIView(
+    StaffEditorPermissionMixin,
+    generics.ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     # perhaps adding user, different serializer class (advanced for now)
-    authentication_classes = [authentication.SessionAuthentication]
-    permission_classes = [permissions.IsAdminUser, IsStaffEditorPermissions]
+    # authentication_classes = [
+        # authentication.SessionAuthentication,
+        # authentication.TokenAuthentication,
+        # TokenAuthentication
+        # ]
+    # permission_classes = [permissions.IsAdminUser, IsStaffEditorPermissions]
 
     def perform_create(self, serializer):
         # serializer.save(user=self.request.user)
@@ -46,16 +55,22 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
 
 product_list_create_view = ProductListCreateAPIView.as_view()
 
-class ProductDetailAPIView(generics.RetrieveAPIView):
+class ProductDetailAPIView(
+    StaffEditorPermissionMixin,
+    generics.RetrieveAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    # permission_classes = [permissions.IsAdminUser, IsStaffEditorPermissions]
     # loopup_field = 'pk'
 product_detail_view = ProductDetailAPIView.as_view()
 
-class ProductUpdateAPIView(generics.UpdateAPIView):
+class ProductUpdateAPIView(
+    StaffEditorPermissionMixin,
+    generics.UpdateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     # permission_classes = [permissions.DjangoModelPermissions]
+    # permission_classes = [permissions.IsAdminUser, IsStaffEditorPermissions]
     loopup_field = 'pk'
 
     def perform_update(self, serializer):
@@ -65,10 +80,13 @@ class ProductUpdateAPIView(generics.UpdateAPIView):
             
 product_update_view = ProductUpdateAPIView.as_view()
 
-class ProductDestroyAPIView(generics.DestroyAPIView):
+class ProductDestroyAPIView(
+    StaffEditorPermissionMixin,
+    generics.DestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     loopup_field = 'pk'
+    # permission_classes = [permissions.IsAdminUser, IsStaffEditorPermissions]
 
     def perform_destroy(self, instance):
         # instance
