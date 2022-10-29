@@ -1,9 +1,13 @@
 # from re import L
 from django.db import models
+from django.conf import settings
+
+User = settings.AUTH_USER_MODEL # auth.User string
 
 # Create your models here.
 class Product(models.Model):
     # owner = models.ForeignKey(User) for custom permissions
+    user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL)
     title = models.CharField(max_length=120)
     content = models.TextField(blank=True, null=True)
     price = models.DecimalField(max_digits=15,

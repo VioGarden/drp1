@@ -8,7 +8,9 @@ from yaml import serialize
 
 # from api.authentication import TokenAuthentication
 
-from api.mixins import StaffEditorPermissionMixin
+from api.mixins import (
+    StaffEditorPermissionMixin,
+    UserQuerySetMixin)
 
 from .models import Product
 # from ..api.permissions import IsStaffEditorPermissions
@@ -32,6 +34,7 @@ from .serializers import ProductSerializer
 # product_create_view = ProductCreateAPIView.as_view()
 
 class ProductListCreateAPIView(
+    UserQuerySetMixin,
     StaffEditorPermissionMixin,
     generics.ListCreateAPIView):
     queryset = Product.objects.all()
@@ -47,15 +50,28 @@ class ProductListCreateAPIView(
     def perform_create(self, serializer):
         # serializer.save(user=self.request.user)
         # print(serializer.validated_data)
+        # email = serializer.validated_data.pop('email')
+        # print(email)
         title = serializer.validated_data.get('title')
         content = serializer.validated_data.get('content') or None
         if content is None:
             content = title
-        serializer.save(content=content)
+        serializer.save(user=self.request.user, content=content)
+    
+    # def get_queryset(self, *args, **kwargs):
+    #     qs = super().get_queryset(*args, **kwargs)
+    #     request = self.request
+    #     user = request.user
+    #     # print(request.user)
+    #     # # if no authentication (StaffEditorPermissionMixin didnt exist)
+    #     if not user.is_authenticated:
+    #         return Product.objects.none()
+    #     return qs.filter(user=request.user)
 
 product_list_create_view = ProductListCreateAPIView.as_view()
 
 class ProductDetailAPIView(
+    UserQuerySetMixin,
     StaffEditorPermissionMixin,
     generics.RetrieveAPIView):
     queryset = Product.objects.all()
@@ -65,6 +81,7 @@ class ProductDetailAPIView(
 product_detail_view = ProductDetailAPIView.as_view()
 
 class ProductUpdateAPIView(
+    UserQuerySetMixin,
     StaffEditorPermissionMixin,
     generics.UpdateAPIView):
     queryset = Product.objects.all()
