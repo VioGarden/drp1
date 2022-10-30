@@ -38,11 +38,17 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    # third party api services
+    'algoliasearch_django',
+
+    # third party packages
     'rest_framework',
     'rest_framework.authtoken',
 
+    # internal apps
     'api',
     'products',
+    'search',
 ]
 
 MIDDLEWARE = [
@@ -147,6 +153,14 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination", "PAGE_SIZE": 10
 }
+
+# environment variables -> django.dotenv -> reads .env
+ALGOLIA = {
+    'APPLICATION_ID': 'XDWFVG9X5T',
+    'API_KEY': '1d5fc64be58b268b83b9b0ddbbf77b6e',
+    'INDEX_PREFIX': 'cfe',
+}
+
 
 # Explore in future
 # REST_FRAMEWORK = {
