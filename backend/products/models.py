@@ -47,9 +47,23 @@ class Product(models.Model):
     def get_tags_list(self):
         return [random.choice(TAGS_MODEL_VALUES)]
 
+    def get_absolute_url(self):
+        return f"/api/products/{self.pk}/"
+
+    @property
+    def endpoint(self):
+        return self.get_absolute_url()
+
+    @property
+    def path(self):
+        return f"/products/{self.pk}/"
+
     @property
     def sale_price(self):
         return "%.2f"%(float(self.price)*0.8)
 
     def get_discount(self):
         return "Discount!!!"
+    
+    def body(self):
+        return self.content
